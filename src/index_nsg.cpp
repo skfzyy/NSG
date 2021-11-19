@@ -53,8 +53,9 @@ void IndexNSG::Load_nn_graph(const char *filename) {
   //读取上一步预构造的图,看一下这个数据格式
   //第一个四字节是元素个数?
   //从第二个开始就是具体的元素
+  //这个函数实际上是在读KNN，而不是原始数据
   std::ifstream in(filename, std::ios::binary);
-  unsigned k;
+  unsigned k; //k个邻居节点
   //一次读了四个字节?
   in.read((char *)&k, sizeof(unsigned));
   //基地址是结束位置,偏移量0
@@ -63,6 +64,7 @@ void IndexNSG::Load_nn_graph(const char *filename) {
   std::ios::pos_type ss = in.tellg();
 
   size_t fsize = (size_t)ss;
+  //但是按照他这么整的话,实际上就没有M和Norm的值了
   size_t num = (unsigned)(fsize / (k + 1) / 4);
   in.seekg(0, std::ios::beg);
 
@@ -150,6 +152,11 @@ void IndexNSG::get_neighbors(const float *query, const Parameters &parameter,
                              boost::dynamic_bitset<> &flags,
                              std::vector<Neighbor> &retset,
                              std::vector<Neighbor> &fullset) {
+//这里从link传入进来的参数是:
+/*
+  tmp--retset
+  pool-fullset
+*/
   unsigned L = parameter.Get<unsigned>("L");
 
   retset.resize(L + 1);
@@ -157,11 +164,22 @@ void IndexNSG::get_neighbors(const float *query, const Parameters &parameter,
   // initializer_->Search(query, nullptr, L, parameter, init_ids.data());
 
   L = 0;
+
+  //这里实际上就是算法1
+  //其中,L就是candidate pool的尺寸
+  //伪代码4-8行
+  //从导航节点出发,把当前导航节点的所有邻居节点都做一个标记
   for (unsigned i = 0; i < init_ids.size() && i < final_graph_[ep_].size(); i++) {
+    //取当前节点在KNN中的邻居的索引
     init_ids[i] = final_graph_[ep_][i];
+    //将导航节点的第i个l邻居进行标记
     flags[init_ids[i]] = true;
+    //L++是为了获取真实的邻居节点数
     L++;
   }
+
+  //在添加完导航节点的邻居节点之后,还需要添加一些点,直到填充满Candidate pool的尺寸
+  //在整个图中随机选....
   while (L < init_ids.size()) {
     unsigned id = rand() % nd_;
     if (flags[id]) continue;
@@ -171,10 +189,20 @@ void IndexNSG::get_neighbors(const float *query, const Parameters &parameter,
   }
 
   L = 0;
+
+  //计算候选池中的所有节点到查询节点的距离
   for (unsigned i = 0; i < init_ids.size(); i++) {
+    //遍历candidate pool里面的所有节点
+
+    //获取候选池中的元素index
     unsigned id = init_ids[i];
+
+    //判断id是不是合法
     if (id >= nd_) continue;
     // std::cout<<id<<std::endl;
+
+    //比较第id个元素和查询元素之间的距离
+    //距离字段记录的是到查询节点的距离
     float dist = distance_->compare(data_ + dimension_ * (size_t)id, query,
                                     (unsigned)dimension_);
     retset[i] = Neighbor(id, dist, true);
@@ -183,6 +211,7 @@ void IndexNSG::get_neighbors(const float *query, const Parameters &parameter,
     L++;
   }
 
+
   std::sort(retset.begin(), retset.begin() + L);
   int k = 0;
   while (k < (int)L) {
@@ -190,6 +219,7 @@ void IndexNSG::get_neighbors(const float *query, const Parameters &parameter,
 
     if (retset[k].flag) {
       retset[k].flag = false;
+      //获取池子里所有元素的id
       unsigned n = retset[k].id;
 
       for (unsigned m = 0; m < final_graph_[n].size(); ++m) {
@@ -356,6 +386,7 @@ void IndexNSG::InterInsert(unsigned n, unsigned range,
   }
 }
 
+//cut_graph_的数目是节点数*range,所以相当于range就是规定一个元素最多可以有多少个邻居节点?
 void IndexNSG::Link(const Parameters &parameters, SimpleNeighbor *cut_graph_) {
   /*
   std::cout << " graph link" << std::endl;
@@ -371,16 +402,22 @@ void IndexNSG::Link(const Parameters &parameters, SimpleNeighbor *cut_graph_) {
 #pragma omp parallel
   {
     // unsigned cnt = 0;
+    //猜测这里的pool是不是就是候选节点池
     std::vector<Neighbor> pool, tmp;
     boost::dynamic_bitset<> flags{nd_, 0};
 //每100个做一次动态任务分配
 #pragma omp for schedule(dynamic, 100)
     for (unsigned n = 0; n < nd_; ++n) {
+      //遍历了每一个节点
       pool.clear();
       tmp.clear();
       flags.reset();
       //从参数看,第一个参数表示数据集中的第几个元素
+      //这个函数是不是就是已经在找邻居节点了
+      //寻找候选的邻居节点集合?
+      //获取n节点的邻居节点(使用算法1)
       get_neighbors(data_ + dimension_ * n, parameters, flags, tmp, pool);
+      //用减肢策略减少某些不必要的边?
       sync_prune(n, pool, parameters, flags, cut_graph_);
       /*
     cnt++;
@@ -401,36 +438,54 @@ void IndexNSG::Link(const Parameters &parameters, SimpleNeighbor *cut_graph_) {
 void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters) {
   std::string nn_graph_path = parameters.Get<std::string>("nn_graph_path");
   unsigned range = parameters.Get<unsigned>("R");
-  //使用二维数组来保存KNN中的向量
   Load_nn_graph(nn_graph_path.c_str());
   data_ = data;
   //确定导航节点
+  //赋值给_ep
   init_graph(parameters);
 
-  //定义了一个邻居数组?
   //数组中的元素个数是*nd_*range
+  //这个数组更像是一个[nd_][range]的数组(或者说就是) 
   SimpleNeighbor *cut_graph_ = new SimpleNeighbor[nd_ * (size_t)range];
   //这个link是干啥的?这里应该是做了什么操作?
+  //所以这里能不能这样猜测:
+  //整个函数实际上使用data_的数据,构造实际的连接结构,但是这边的输入实际上已经是
+  //经过KNN的了啊- -
+  /*
+    1.如果是邻居节点的话,那么其SimpleNeighbor对应索引的元素的id或者距离会被设置
+  */
+ //从导航节点出发,进行搜索,将搜索结果放在cut_graph_中
   Link(parameters, cut_graph_);
+
+  //load_nn_graph的时候就resize过一次,这里为什么要再resize一次?难道nd_在link的时候有改变?
+  //经过检查,没有变化过
   final_graph_.resize(nd_);
 
   //遍历所有的节点
+  //对应算法2的4行
   for (size_t i = 0; i < nd_; i++) {
     //第i个元素的候选池?    
+    //难道这里就是要在实体集合中给节点i选择最多m个邻居?
+    //这里range应该就是对应算法中的m
+    //对应算法第6-8行
     SimpleNeighbor *pool = cut_graph_ + i * (size_t)range;
+    //接下来应该是要在全局节点中选择range个节点
     unsigned pool_size = 0;
     //遍历所有元素的候选池
     //这个应该是在计算pool_size的大小
+    //确定针对这个节点而言,pool的大小
     for (unsigned j = 0; j < range; j++) {
       //这个的关键是要确定什么时候这个distance会变成-1
       //在第i个元素的候选池中的第j个元素到i的距离是-1?(distance记录的是到谁的距离?)
+      //这里应该是不可达的节点
       if (pool[j].distance == -1) break;
       pool_size = j;
     }
     //当前遍历到的元素对应的池子++
     pool_size++;
 
-    //把第i个元素对应的大小改成pool_size?
+    //第i个节点的最邻近节点改成pool里面的节点
+    //直接改变邻居结构构造
     final_graph_[i].resize(pool_size);
     for (unsigned j = 0; j < pool_size; j++) {
       final_graph_[i][j] = pool[j].id;

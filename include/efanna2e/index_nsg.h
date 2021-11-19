@@ -45,7 +45,7 @@ class IndexNSG : public Index {
     typedef std::vector<SimpleNeighbors > LockGraph;
     typedef std::vector<nhood> KNNGraph;
 
-    //这个图本质上使用二维数组来保存的
+    //这个图应该是使用邻接矩阵来保存的KNNG
     CompactGraph final_graph_;
 
     Index *initializer_;
@@ -79,9 +79,13 @@ class IndexNSG : public Index {
     /**
      * @brief 读取预定义的图
      * 输出图的数据格式:
-     * 
-     * 保存图的数据形式:
-     * 
+     *  源数据格式为fvecs
+     * 保存图的数据形式:(邻接矩阵,保存在final_graph_里面)
+     *  以行序优先的方式保存数据
+     *  + 每一行的前4个bytes(一个int)数据保存k的值(前k个邻居)
+     *  + 接下来的4字节存M????M是啥子
+     *  + 在接下来存这个点的范式
+     *  + 接下来用k*sizeof(int)存索引
      * @param filename 
      * @author shenhangke
      * @date 2021-11-18

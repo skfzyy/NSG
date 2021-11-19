@@ -19,6 +19,8 @@ struct Neighbor {
     bool flag;
 
     Neighbor() = default;
+
+    //f表示是不是邻居节点
     Neighbor(unsigned id, float distance, bool f) : id{id}, distance{distance}, flag(f) {}
 
     inline bool operator<(const Neighbor &other) const {
