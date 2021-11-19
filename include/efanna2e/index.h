@@ -45,7 +45,14 @@ class Index {
   inline const float *GetDataset() const { return data_; }
  protected:
   const size_t dimension_;
+  /**
+   * @brief 保存实际数据
+   * 
+   * @author shenhangke
+   * @date 2021-11-19
+   */
   const float *data_;
+  //点的总数量
   size_t nd_;
   bool has_built;
   Distance* distance_;

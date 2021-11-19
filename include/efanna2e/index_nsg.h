@@ -45,6 +45,7 @@ class IndexNSG : public Index {
     typedef std::vector<SimpleNeighbors > LockGraph;
     typedef std::vector<nhood> KNNGraph;
 
+    //这个图本质上使用二维数组来保存的
     CompactGraph final_graph_;
 
     Index *initializer_;
@@ -54,6 +55,17 @@ class IndexNSG : public Index {
         const Parameters &parameter,
         std::vector<Neighbor> &retset,
         std::vector<Neighbor> &fullset);
+    /**
+     * @brief Get the neighbors object
+     * 
+     * @param query query node(vector)
+     * @param parameter 
+     * @param flags (save whether is neighbors?)
+     * @param retset 
+     * @param fullset 
+     * @author shenhangke
+     * @date 2021-11-19
+     */
     void get_neighbors(
         const float *query,
         const Parameters &parameter,
@@ -64,6 +76,16 @@ class IndexNSG : public Index {
     void InterInsert(unsigned n, unsigned range, std::vector<std::mutex>& locks, SimpleNeighbor* cut_graph_);
     void sync_prune(unsigned q, std::vector<Neighbor>& pool, const Parameters &parameter, boost::dynamic_bitset<>& flags, SimpleNeighbor* cut_graph_);
     void Link(const Parameters &parameters, SimpleNeighbor* cut_graph_);
+    /**
+     * @brief 读取预定义的图
+     * 输出图的数据格式:
+     * 
+     * 保存图的数据形式:
+     * 
+     * @param filename 
+     * @author shenhangke
+     * @date 2021-11-18
+     */
     void Load_nn_graph(const char *filename);
     void tree_grow(const Parameters &parameter);
     void DFS(boost::dynamic_bitset<> &flag, unsigned root, unsigned &cnt);
@@ -72,6 +94,13 @@ class IndexNSG : public Index {
 
   private:
     unsigned width;
+
+    /**
+     * @brief 表示导航节点
+     * 
+     * @author shenhangke
+     * @date 2021-11-19
+     */
     unsigned ep_;
     std::vector<std::mutex> locks;
     char* opt_graph_;
