@@ -50,19 +50,20 @@ class IndexNSG : public Index {
 
     Index *initializer_;
     void init_graph(const Parameters &parameters);
+    
     void get_neighbors(
         const float *query,
         const Parameters &parameter,
         std::vector<Neighbor> &retset,
         std::vector<Neighbor> &fullset);
     /**
-     * @brief Get the neighbors object
+     * @brief 这个函数的本质就是算法1，通过不断的找到距离查询节点更近的节点，来获取路径以及相关信息
      * 
      * @param query query node(vector)
      * @param parameter 
      * @param flags (save whether is neighbors?)
-     * @param retset 
-     * @param fullset 
+     * @param retset 记录在使用算法1遍历的过程中距离查询节点最近的节点（这个集合的数目是L）
+     * @param fullset 记录在使用算法1遍历的过程中所有经过的节点以及他们的邻居节点
      * @author shenhangke
      * @date 2021-11-19
      */

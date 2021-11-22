@@ -49,6 +49,7 @@ void IndexNSG::Load(const char *filename) {
   cc /= nd_;
   // std::cout<<cc<<std::endl;
 }
+
 void IndexNSG::Load_nn_graph(const char *filename) {
   //读取上一步预构造的图,看一下这个数据格式
   //第一个四字节是元素个数?
@@ -152,34 +153,41 @@ void IndexNSG::get_neighbors(const float *query, const Parameters &parameter,
                              boost::dynamic_bitset<> &flags,
                              std::vector<Neighbor> &retset,
                              std::vector<Neighbor> &fullset) {
+//这个函数主要针对单个节点，首先先盲猜是用来获取某个节点的邻居节点
+
 //这里从link传入进来的参数是:
 /*
   tmp--retset
   pool-fullset
 */
-  unsigned L = parameter.Get<unsigned>("L");
 
+//根据readme中说的，L是个控制NSG质量的参数
+  unsigned L = parameter.Get<unsigned>("L");
+//tmp.resize(L+1)
   retset.resize(L + 1);
+
   std::vector<unsigned> init_ids(L);
   // initializer_->Search(query, nullptr, L, parameter, init_ids.data());
 
+  //这里具体的L是控制的什么？
   L = 0;
 
   //这里实际上就是算法1
   //其中,L就是candidate pool的尺寸
   //伪代码4-8行
   //从导航节点出发,把当前导航节点的所有邻居节点都做一个标记
+
+  //i的值小于L，同时小于导航节点邻居节点数（看是L大还是导航节点的邻居节点数多）
   for (unsigned i = 0; i < init_ids.size() && i < final_graph_[ep_].size(); i++) {
-    //取当前节点在KNN中的邻居的索引
+    //记录导航节点的前L个节点
     init_ids[i] = final_graph_[ep_][i];
-    //将导航节点的第i个l邻居进行标记
+    //在整个数据集中将导航节点的第i个邻居进行标记
     flags[init_ids[i]] = true;
     //L++是为了获取真实的邻居节点数
     L++;
   }
 
-  //在添加完导航节点的邻居节点之后,还需要添加一些点,直到填充满Candidate pool的尺寸
-  //在整个图中随机选....
+  //如果导航节点的邻居数比给定的L小，那么在数据集中随机选择一些节点把pool填充到L的尺寸
   while (L < init_ids.size()) {
     unsigned id = rand() % nd_;
     if (flags[id]) continue;
@@ -189,10 +197,24 @@ void IndexNSG::get_neighbors(const float *query, const Parameters &parameter,
   }
 
   L = 0;
+  
+  /*============================================================*/
+  /*
+    到此为止，上面的代码做的工作就遍历导航节点的邻居节点，然后使用init_ids数据结构
+    来保存选中的节点ID,这个选中的节点集合主要包含以下两个方面：
+    1. 导航节点的邻居节点
+    2. 随机选择的节点，用来填充init_ids
+  */
+  /*============================================================*/
 
   //计算候选池中的所有节点到查询节点的距离
+  /*============================================================*/
+  /*
+  计算候选池中所有节点到查询节点之间的距离，然后把相应的id和距离纪录在retset中
+  */
+  /*============================================================*/
   for (unsigned i = 0; i < init_ids.size(); i++) {
-    //遍历candidate pool里面的所有节点
+    //如果这里是在使用算法1的话，那么这里就是在遍历导航节点的邻居节点
 
     //获取候选池中的元素index
     unsigned id = init_ids[i];
@@ -203,17 +225,22 @@ void IndexNSG::get_neighbors(const float *query, const Parameters &parameter,
 
     //比较第id个元素和查询元素之间的距离
     //距离字段记录的是到查询节点的距离
+    //计算当前节点到查询节点的距离（欧式距离）
     float dist = distance_->compare(data_ + dimension_ * (size_t)id, query,
                                     (unsigned)dimension_);
+    
     retset[i] = Neighbor(id, dist, true);
     fullset.push_back(retset[i]);
     // flags[id] = 1;
     L++;
   }
 
-
+  //按照升序排列池子中的节点
   std::sort(retset.begin(), retset.begin() + L);
+
   int k = 0;
+
+  //选择前k个节点？此时L的值是原来输入进来的L值
   while (k < (int)L) {
     int nk = L;
 
@@ -222,16 +249,26 @@ void IndexNSG::get_neighbors(const float *query, const Parameters &parameter,
       //获取池子里所有元素的id
       unsigned n = retset[k].id;
 
+      //查找这个池子中每一个节点的邻居节点
       for (unsigned m = 0; m < final_graph_[n].size(); ++m) {
         unsigned id = final_graph_[n][m];
-        if (flags[id]) continue;
-        flags[id] = 1;
 
+        //如果当前的这个邻居的邻居已经在第一个池子里面了，就跳过这个节点
+        if (flags[id]) continue;
+        flags[id] = true;
+
+        //计算当前节点到查询节点的距离
         float dist = distance_->compare(query, data_ + dimension_ * (size_t)id,
                                         (unsigned)dimension_);
         Neighbor nn(id, dist, true);
+        //这里可以看出，fullset是用来记录所有路径，以及所经过路径的所有邻居节点
+        //而retset是记录在遍历的过程中与查询节点距离最近的那些节点
         fullset.push_back(nn);
+
+        //从这里可以看出，reset实际上就是一个堆（小顶堆）
         if (dist >= retset[L - 1].distance) continue;
+        //这里直接通过调试看一下具体做了什么
+        //难道这个是个堆？然后往里面加内容？
         int r = InsertIntoPool(retset.data(), L, nn);
 
         if (L + 1 < retset.size()) ++L;
@@ -265,53 +302,107 @@ void IndexNSG::init_graph(const Parameters &parameters) {
   ep_ = tmp[0].id;
 }
 
+/**
+ * @brief 
+ * 
+ * @param q 查询节点
+ * @param pool 使用算法1搜索时所有经过的点（包括邻居节点）
+ * @param parameter 
+ * @param flags 在算法1搜索时，探索过的点都会被标记为true
+ * @param cut_graph_ 上一层传进来的，看名字也不知道有啥用
+ *                  但是整体的大小是一个图中的每一个节点对应拥有一个range大小（R）的数组
+ *                  数组中存储的是SimpleNeibor类型的节点
+ * @author shenhangke
+ * @date 2021-11-21
+ */
 void IndexNSG::sync_prune(unsigned q, std::vector<Neighbor> &pool,
                           const Parameters &parameter,
                           boost::dynamic_bitset<> &flags,
                           SimpleNeighbor *cut_graph_) {
+  //遍历过的节点的flags都是true
+  //这个函数应该就是应用MRNG算法来从候选池子中选择m个节点进行处理
   unsigned range = parameter.Get<unsigned>("R");
   unsigned maxc = parameter.Get<unsigned>("C");
+
   width = range;
   unsigned start = 0;
 
   for (unsigned nn = 0; nn < final_graph_[q].size(); nn++) {
+    //遍历查询节点的邻居节点
     unsigned id = final_graph_[q][nn];
+    //如果是已经在算法1中经历过的节点，就不再进行处理
     if (flags[id]) continue;
+
+    //计算查询节点与他的邻居节点的距离
     float dist =
         distance_->compare(data_ + dimension_ * (size_t)q,
                            data_ + dimension_ * (size_t)id, (unsigned)dimension_);
+    //把查询节点在KNN中的邻居节点加入到pool池子中来
     pool.push_back(Neighbor(id, dist, true));
   }
 
+  //按照距离查询节点的大小顺序，把所有的节点进行排序
   std::sort(pool.begin(), pool.end());
+
+  //这个应该是用来保存邻居节点结果的
   std::vector<Neighbor> result;
+
+  //如果在pool中最近的一个节点就是查询节点的话，start++
   if (pool[start].id == q) start++;
+
+  //首先把pool中距离查询节点最近的一个节点放入结果中
   result.push_back(pool[start]);
 
+  //这里应该是一个迭代的过程，如果按照伪代码来说的话，maxc是选择的节点数m？
   while (result.size() < range && (++start) < pool.size() && start < maxc) {
+    //每次选择当前距离查询节点最近的节点（排除已经处理过的节点）
     auto &p = pool[start];
+
+    //遮挡？
     bool occlude = false;
+
+    //这里应该就是条件
+    /*
+    简单来说，这里的条件要满足如下情况：
+    对于当前在pool中距离查询节点最近的节点来说，要加入到结果集合，需要满足如下条件：
+    1. 当前节点不能在结果集合中出现过
+    2. 当前节点到查询节点的距离要小于等于当前节点到结果集合（已经被选中在查询节点最近邻节点集合中）中任意一个顶点的距离
+      （这一点在论文中有提到，大概就是三角形两边打于第三边之类的）
+    
+    */
     for (unsigned t = 0; t < result.size(); t++) {
+      //对当前结果集中的节点进行诶个处理
       if (p.id == result[t].id) {
+        //如果在结果集合中找到当前距离查询节点最近的节点，那么就把标志位置true
         occlude = true;
         break;
       }
+      
+      //计算当前节点到结果集合中每个节点的距离
       float djk = distance_->compare(data_ + dimension_ * (size_t)result[t].id,
                                      data_ + dimension_ * (size_t)p.id,
                                      (unsigned)dimension_);
+      
       if (djk < p.distance /* dik */) {
         occlude = true;
         break;
       }
     }
+
+
     if (!occlude) result.push_back(p);
   }
 
+
   SimpleNeighbor *des_pool = cut_graph_ + (size_t)q * (size_t)range;
+
+  //这里就是在赋值了
   for (size_t t = 0; t < result.size(); t++) {
     des_pool[t].id = result[t].id;
     des_pool[t].distance = result[t].distance;
   }
+
+  //如果最后选中的节点数小于range，那么就把截止的那个节点的距离设置为-1
   if (result.size() < range) {
     des_pool[result.size()].distance = -1;
   }
@@ -404,11 +495,12 @@ void IndexNSG::Link(const Parameters &parameters, SimpleNeighbor *cut_graph_) {
     // unsigned cnt = 0;
     //猜测这里的pool是不是就是候选节点池
     std::vector<Neighbor> pool, tmp;
+    //这里的flags应该是对应每一个S中的节点的检查标识位
     boost::dynamic_bitset<> flags{nd_, 0};
 //每100个做一次动态任务分配
 #pragma omp for schedule(dynamic, 100)
     for (unsigned n = 0; n < nd_; ++n) {
-      //遍历了每一个节点
+      //这里是针对每一个节点而言
       pool.clear();
       tmp.clear();
       flags.reset();
@@ -416,8 +508,17 @@ void IndexNSG::Link(const Parameters &parameters, SimpleNeighbor *cut_graph_) {
       //这个函数是不是就是已经在找邻居节点了
       //寻找候选的邻居节点集合?
       //获取n节点的邻居节点(使用算法1)
+      //在每一次参数传进来的时候都是被初始化为空
+      /*============================================================*/
+      /*
+        这个函数的作用就是使用算法1来遍历从导航节点开始到查询节点路径上的所有的经过的点
+        以及他们的邻居节点
+      */
+      /*============================================================*/
       get_neighbors(data_ + dimension_ * n, parameters, flags, tmp, pool);
+      
       //用减肢策略减少某些不必要的边?
+      //pool是所有从导航节点到查询节点经历过的边
       sync_prune(n, pool, parameters, flags, cut_graph_);
       /*
     cnt++;
