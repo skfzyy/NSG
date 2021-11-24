@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "BitWrite",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/python/BitWrite.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "run_index",
             "type": "cppdbg",
             "request": "launch",
@@ -15,7 +22,6 @@
                 "40",
                 "50",
                 "500",
-
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/tests",
