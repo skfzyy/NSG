@@ -35,6 +35,32 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "run_gidsne",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/tests/test_gidsne_index",
+            "args": [
+                "/root/project/data/siftsmall/siftsmall_base.fvecs",
+                "/root/project/data/siftsmall/nndescent/knn.graph",
+                "40",
+                "50",
+                "500",
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/tests",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "make_project"
         }
     ]
 }

@@ -1,4 +1,4 @@
-#include "efanna2e/index_nsg.h"
+ #include "efanna2e/index_nsg.h"
 
 #include <omp.h>
 #include <bitset>
@@ -51,7 +51,7 @@ void IndexNSG::Load(const char *filename) {
 }
 
 void IndexNSG::Load_nn_graph(const char *filename) {
-  //读取上一步预构造的图,看一下这个数据格式
+  //读取上一步预构造的图,看一下这个数据格
   //第一个四字节是元素个数?
   //从第二个开始就是具体的元素
   //这个函数实际上是在读KNN，而不是原始数据

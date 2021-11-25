@@ -15,8 +15,13 @@
 #include "index_nsg.h"
 #include "neighbor.h"
 #include "parameters.h"
+#include <iostream>
 #include <map>
+#include <string>
 #include <vector>
+#include "distance.h"
+
+#define logDebug(x) std::cout << (x) << std::endl
 
 namespace QI
 {
@@ -27,24 +32,26 @@ namespace QI
     {
       private:
         std::map<int, std::vector<int>> _pathIndex;
+        std::map<int,std::vector<int>*> _originGraph;
 
       public:
+        explicit IndexGidsne():IndexNSG(0,0,(Metric)0,NULL){};
         std::map<int, std::vector<int>> getPathIndex()
         {
             return this->_pathIndex;
         }
 
         /**
-         * @brief DFS to search the knn,which want to get the 
+         * @brief DFS to search the knn,which want to get the
          *        connection relation between the nodes
          *        the result will be built in _pathIndex
-         * 
-         *        this function is called after load Load_nn_graph 
-         * 
+         *
+         *        this function is called after load Load_nn_graph
+         *
          * @author shenhangke
          * @date 2021-11-25
          */
-        void buildPathIndex();
+        void buildPathIndex(std::string filePath);
 
         virtual void sync_prune(unsigned q,
                                 std::vector<Neighbor>& pool,

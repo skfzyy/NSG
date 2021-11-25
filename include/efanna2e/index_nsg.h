@@ -12,6 +12,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <stack>
 
+
 namespace efanna2e {
 
 class IndexNSG : public Index {
