@@ -12,6 +12,13 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "writeIndexFile",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/python/IndexOriginFile.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "run_index",
             "type": "cppdbg",
             "request": "launch",
@@ -52,7 +59,7 @@
             "cwd": "${workspaceFolder}/build/tests",
             "environment": [],
             "externalConsole": false,
-            "MIMode": "lldb",
+            "MIMode": "gdb",
             "setupCommands": [
                 {
                     "description": "为 gdb 启用整齐打印",

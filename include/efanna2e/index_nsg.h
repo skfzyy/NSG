@@ -98,7 +98,7 @@ class IndexNSG : public Index {
     void findroot(boost::dynamic_bitset<> &flag, unsigned &root, const Parameters &parameter);
 
 
-  private:
+  protected:
     unsigned width;
 
     /**
