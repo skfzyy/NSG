@@ -42,16 +42,16 @@ namespace QI
         }
 
         /**
-         * @brief DFS to search the knn,which want to get the
-         *        connection relation between the nodes
-         *        the result will be built in _pathIndex
+         * @brief read the origin graph to _originGraph
          *
-         *        this function is called after load Load_nn_graph
+         *   
          *
          * @author shenhangke
          * @date 2021-11-25
          */
-        void buildPathIndex(std::string filePath);
+        void loadOriginGraph(std::string filePath);
+
+        void buildOriginPathIndex();
 
         virtual void sync_prune(unsigned q,
                                 std::vector<Neighbor>& pool,

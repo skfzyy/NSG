@@ -4,7 +4,7 @@ int main(int argc, char const *argv[])
 {
     using namespace QI;
     IndexGidsne* index=new IndexGidsne();
-    index->buildPathIndex("/root/data/wiki-Vote.txt");
+    index->loadOriginGraph("/Users/shenhangke/Downloads/wiki-Vote.txt");
     return 0;
 
 }

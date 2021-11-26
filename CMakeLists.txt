@@ -1,8 +1,20 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.21)
 
 project(efanna2e)
 include_directories(${PROJECT_SOURCE_DIR}/include)
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    message("linux")
+    set(LINUX ON)
+    add_definitions(-DLinux)
+elif(APPLE)
+    message("Apple")
+    set(MACOS ON)
+    add_definitions(-DMacos)
+endif()
+
+
 #OpenMP
+if(LINUX)
 find_package(OpenMP)
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -10,8 +22,16 @@ if (OPENMP_FOUND)
 else()
     message(FATAL_ERROR "no OpenMP supprot")
 endif()
+else()
+    include_directories(/usr/local/Cellar/libomp/13.0.0/include)
+    include_directories(/usr/local/Cellar/boost/1.76.0/include)
+    include_directories(/usr/local/Cellar/gperftools/2.9.1/include)
+    link_directories(/usr/local/Cellar/boost/1.76.0/lib)
+    link_directories(/usr/local/Cellar/gperftools/2.9.1/lib)
+endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
 add_definitions (-std=c++11 -O3 -lboost -march=native -Wall -DINFO)
+
 
 add_subdirectory(src)
 add_subdirectory(tests)
