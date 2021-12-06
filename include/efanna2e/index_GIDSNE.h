@@ -29,7 +29,6 @@
 
 namespace QI
 {
-
     using namespace efanna2e;
 
     class IndexGidsne : public IndexNSG
