@@ -20,5 +20,8 @@ else()
     target_link_libraries(test_nsg_optimized_search ${PROJECT_NAME} -ltcmalloc)
 endif()
 
-add_executable(test_gidsne_index test_gidsne_index.cpp)
-target_link_libraries(test_gidsne_index PRIVATE ${PROJECT_NAME})
+# message(STATUS ${CMAKE_BINARY_DIR}/src)
+add_library(test_gidsne_index SHARED test_gidsne_index.cpp)
+# target_link_directories(test_gidsne_index PUBLIC ${CMAKE_BINARY_DIR}/src)
+target_link_libraries(test_gidsne_index PRIVATE ${CMAKE_BINARY_DIR}/src/lib${PROJECT_NAME}.a)
+

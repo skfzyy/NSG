@@ -12,6 +12,23 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "testCall",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/python/testCCall.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "NMF",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/python/Embed/NMF_1130.py",
+            "console": "integratedTerminal",
+            "environment": [{"name":"PYTHONHOME","value":"${workspaceFolder}/python"}],
+        },
+
+
+        {
             "name": "writeIndexFile",
             "type": "python",
             "request": "launch",

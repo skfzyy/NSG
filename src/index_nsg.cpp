@@ -21,11 +21,18 @@ void IndexNSG::Save(const char *filename) {
   std::ofstream out(filename, std::ios::binary | std::ios::out);
   assert(final_graph_.size() == nd_);
 
+  //第一个四字节保存有多少个邻居节点
   out.write((char *)&width, sizeof(unsigned));
+  //第二个四字节保存导航节点的id
   out.write((char *)&ep_, sizeof(unsigned));
+
   for (unsigned i = 0; i < nd_; i++) {
+    //i这个节点邻居节点的数目
     unsigned GK = (unsigned)final_graph_[i].size();
+
     out.write((char *)&GK, sizeof(unsigned));
+
+    //顺序写邻居节点
     out.write((char *)final_graph_[i].data(), GK * sizeof(unsigned));
   }
   out.close();

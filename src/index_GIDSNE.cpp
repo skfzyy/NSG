@@ -19,7 +19,7 @@ void QI::IndexGidsne::loadOriginGraph(std::string filePath,
     std::ifstream file;
     std::ifstream indexFile;
     file.open(filePath.c_str(), std::ios::in);
-    indexFile.open(filePath.c_str(), std::ios::in);
+    indexFile.open(indexFilePath.c_str(), std::ios::in);
     if (!file.is_open() || !indexFile.is_open())
     {
         return;
@@ -68,13 +68,14 @@ void QI::IndexGidsne::loadOriginGraph(std::string filePath,
             }
             else
             {
+                // save the nn graph in origin graph
                 this->_originGraph[splitResult[0]].push_back(
                     splitResult[1]);
             }
         }
     }
 
-    while (getline(file, strLine))
+    while (getline(indexFile, strLine))
     {
         // delte comment
         if (strLine[0] == '#')
@@ -90,6 +91,7 @@ void QI::IndexGidsne::loadOriginGraph(std::string filePath,
             }
             else
             {
+                
                 this->_originGraphIndex[splitResult[0]] =
                     splitResult[1];
             }
@@ -183,16 +185,16 @@ void QI::IndexGidsne::sync_prune(unsigned q,
             }
         }
 
-        bool isExistsPath=false;
-        int realp=this->_originGraphIndex[p.id];
-        int realq=this->_originGraphIndex[q];
-        if(this->_pathIndex[realq].count(realp)==1){
-            //no path
-            isExistsPath=true;
+        bool isExistsPath = false;
+        int realp = this->_originGraphIndex[p.id];
+        int realq = this->_originGraphIndex[q];
+        if (this->_pathIndex[realq].count(realp) == 1)
+        {
+            // no path
+            isExistsPath = true;
         }
 
-
-        if (!occlude&&isExistsPath)
+        if (!occlude && isExistsPath)
             result.push_back(p);
     }
 
