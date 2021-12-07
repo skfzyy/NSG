@@ -1,5 +1,15 @@
-def IndexOriginNode(inFilePath,outFilePath):
+
+def IndexOriginNode(inFilePath:str,outFilePath):
+    """[summary]
+
+    Args:
+        inFilePath ([type]): [description]
+        outFilePath ([type]): [description]
+    """    
     allNodes=set()
+    nodeIndex={}
+    indexNode={}
+    
     with open(inFilePath,"r") as file:
         lines=file.readlines()
         for line in lines:
@@ -15,7 +25,11 @@ def IndexOriginNode(inFilePath,outFilePath):
         index=0
         for node in allNodes:
             file.write(str(index)+"\t"+str(node)+"\r")
+            indexNode[index]=node
+            nodeIndex[node]=index
             index+=1
+    return nodeIndex,indexNode
+    
 
     
 if __name__=="__main__":

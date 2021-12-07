@@ -1,6 +1,14 @@
 #include <efanna2e/index_GIDSNE.h>
 
-void load_data(char* filename, float*& data, unsigned& num,
+#define GR_INDEX_SUFIX "_index"
+#define KNN_SUFIX "_knn"
+#define EMBED_SUFIX "_embed"
+#define GIDSNE_SUFIX "_gidsne"
+
+#define COMBINEPATH(x, y)                                            \
+    (std::string((x)) + std::string((y))).c_str()
+
+void load_data(const char* filename, float*& data, unsigned& num,
                unsigned& dim)
 { // load data with sift10K pattern
     std::ifstream in(filename, std::ios::binary);
@@ -25,6 +33,45 @@ void load_data(char* filename, float*& data, unsigned& num,
     in.close();
 }
 
+extern "C" void BuildGidsneIndex(
+    const wchar_t* originalDataPath,
+    unsigned L,
+    unsigned R,
+    unsigned C)
+{
+    std::wstring wOriginDataPath(originalDataPath);
+    std::string ansiOriginDataPath(wOriginDataPath.begin(),
+                                   wOriginDataPath.end());
+    float* data_load = NULL;
+    unsigned points_num, dim;
+    load_data(COMBINEPATH(ansiOriginDataPath, EMBED_SUFIX), data_load,
+              points_num, dim);
+    std::string nn_graph_path(
+        COMBINEPATH(ansiOriginDataPath, KNN_SUFIX));
+
+    // data_load = efanna2e::data_align(data_load, points_num,
+    // dim);//one must align the data before build
+    QI::IndexGidsne indexGidsne(
+        dim, points_num, efanna2e::L2, nullptr,
+        ansiOriginDataPath.c_str(),
+        COMBINEPATH(ansiOriginDataPath, GR_INDEX_SUFIX));
+
+    auto s = std::chrono::high_resolution_clock::now();
+    efanna2e::Parameters paras;
+    paras.Set<unsigned>("L", L);
+    paras.Set<unsigned>("R", R);
+    paras.Set<unsigned>("C", C);
+    paras.Set<std::string>("nn_graph_path", nn_graph_path);
+
+    indexGidsne.Build(points_num, data_load, paras);
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+
+    std::cout << "indexing time: " << diff.count() << "\n";
+    indexGidsne.Save(COMBINEPATH(ansiOriginDataPath, GIDSNE_SUFIX));
+}
+
+
 int main(int argc, char* argv[])
 {
     if (argc != 9)
@@ -45,7 +92,8 @@ int main(int argc, char* argv[])
 
     // data_load = efanna2e::data_align(data_load, points_num,
     // dim);//one must align the data before build
-    QI::IndexGidsne indexGidsne(dim, points_num, efanna2e::L2, nullptr,argv[7],argv[8]);
+    QI::IndexGidsne indexGidsne(dim, points_num, efanna2e::L2,
+                                nullptr, argv[7], argv[8]);
 
     auto s = std::chrono::high_resolution_clock::now();
     efanna2e::Parameters paras;
