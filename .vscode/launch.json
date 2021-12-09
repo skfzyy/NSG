@@ -24,10 +24,30 @@
             "request": "launch",
             "program": "${workspaceFolder}/python/Embed/NMF_1130.py",
             "console": "integratedTerminal",
-            "environment": [{"name":"PYTHONHOME","value":"${workspaceFolder}/python"}],
+            "environment": [
+                {
+                    "name": "PYTHONHOME",
+                    "value": "${workspaceFolder}/python"
+                }
+            ],
         },
-
-
+        {
+            "name": "testCCall",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/python/testCCall.py",
+            "console": "integratedTerminal",
+            "args": [
+                "/root/data/wiki-Vote.txt",
+                "20"
+            ],
+            "environment": [
+                {
+                    "name": "PYTHONHOME",
+                    "value": "${workspaceFolder}/python"
+                }
+            ],
+        },
         {
             "name": "writeIndexFile",
             "type": "python",

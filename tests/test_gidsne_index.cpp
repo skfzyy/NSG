@@ -1,4 +1,5 @@
 #include <efanna2e/index_GIDSNE.h>
+// #include <iostream>
 
 #define GR_INDEX_SUFIX "_index"
 #define KNN_SUFIX "_knn"
@@ -56,14 +57,16 @@ extern "C" void BuildGidsneIndex(
         ansiOriginDataPath.c_str(),
         COMBINEPATH(ansiOriginDataPath, GR_INDEX_SUFIX));
 
+    logDebug("has create indexGidsne");
     auto s = std::chrono::high_resolution_clock::now();
     efanna2e::Parameters paras;
     paras.Set<unsigned>("L", L);
     paras.Set<unsigned>("R", R);
     paras.Set<unsigned>("C", C);
     paras.Set<std::string>("nn_graph_path", nn_graph_path);
-
+    logDebug("has set the params");
     indexGidsne.Build(points_num, data_load, paras);
+    logDebug("has build the index");
     auto e = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = e - s;
 

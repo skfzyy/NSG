@@ -6,7 +6,7 @@ from sklearn.decomposition import NMF
 import struct
 import typing
 import os
-import __init__
+import Embed.__init__
 from FileUtil.IndexOriginFile import IndexOriginNode
 from FileUtil.BitWrite import WriteVector
 
@@ -15,6 +15,8 @@ GR_INDEX_SUFIX = "_index"
 KNN_SUFIX = "_knn"
 EMBED_SUFIX = "_embed"
 GIDSNE_SUFIX = "_gidsne"
+QUERY_SUFIX="_query"
+SEARCH_RESULT_SUFIX="_searchResult"
 
 
 def read_csv(csv_file):
