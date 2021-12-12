@@ -6,9 +6,10 @@ from sklearn.decomposition import NMF
 import struct
 import typing
 import os
-import Embed.__init__
+import embed.__init__
 from FileUtil.IndexOriginFile import IndexOriginNode
 from FileUtil.BitWrite import WriteVector
+from FileUtil.BitWrite import generateQueryVec
 
 
 GR_INDEX_SUFIX = "_index"
@@ -17,6 +18,7 @@ EMBED_SUFIX = "_embed"
 GIDSNE_SUFIX = "_gidsne"
 QUERY_SUFIX="_query"
 SEARCH_RESULT_SUFIX="_searchResult"
+
 
 
 def read_csv(csv_file):
@@ -56,6 +58,7 @@ def read_originData(data_file):
 
 
 def EmbedGraph(originalFile, dimension):
+    print("the dimension is: "+str(dimension))
     edges, nodeDegree = read_originData(originalFile)
     nodeIndex, indexNode = IndexOriginNode(
         originalFile, originalFile+GR_INDEX_SUFIX)
@@ -93,6 +96,9 @@ def EmbedGraph(originalFile, dimension):
     for vector in H:
         data.append((dimension, vector))
     WriteVector(data, originalFile+EMBED_SUFIX)
+    return data
+
+
 
 
 if __name__ == "__main__":

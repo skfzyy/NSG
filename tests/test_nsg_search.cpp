@@ -32,12 +32,17 @@ void save_result(char* filename, std::vector<std::vector<unsigned> >& results) {
   std::ofstream out(filename, std::ios::binary | std::ios::out);
 
   for (unsigned i = 0; i < results.size(); i++) {
+    //GK是尺寸
     unsigned GK = (unsigned)results[i].size();
+
+    //先写尺寸
     out.write((char*)&GK, sizeof(unsigned));
+    //然后写ID
     out.write((char*)results[i].data(), GK * sizeof(unsigned));
   }
   out.close();
 }
+
 int main(int argc, char** argv) {
   if (argc != 7) {
     std::cout << argv[0]
@@ -72,6 +77,7 @@ int main(int argc, char** argv) {
   paras.Set<unsigned>("P_search", L);
 
   auto s = std::chrono::high_resolution_clock::now();
+  //数组，用来保存每一个ID的返回值
   std::vector<std::vector<unsigned> > res;
   for (unsigned i = 0; i < query_num; i++) {
     std::vector<unsigned> tmp(K);

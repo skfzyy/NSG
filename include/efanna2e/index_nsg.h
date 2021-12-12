@@ -28,6 +28,7 @@ class IndexNSG : public Index {
 
   virtual void Build(size_t n, const float *data, const Parameters &parameters) override;
 
+  //这里的indices实际上就是ID的编号了
   virtual void Search(
       const float *query,
       const float *x,
