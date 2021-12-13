@@ -30,6 +30,7 @@ def loadQueryResult(filePath: str):
                 break
             else:
                 tempK=struct.unpack("<i",tempK)[0]
+                # print("the tempK is: "+tempK)
                 unpackStr = "<"+str(int(tempK))+"i"
                 result.append(struct.unpack(unpackStr,searchFile.read(4*tempK)))
     return result
@@ -51,5 +52,4 @@ def loadFvecsData(filePath):
 
 
 if __name__ == "__main__":
-    data = [(128, [12., 21.])]
-    WriteVector(data, "./test_data.fvecs")
+    loadQueryResult("/Users/shenhangke/project/C++/QI/nsg/data/wiki-Vote.txt_grd_searchResult")

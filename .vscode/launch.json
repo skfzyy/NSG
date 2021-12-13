@@ -8,7 +8,7 @@
             "name": "BitWrite",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/python/BitWrite.py",
+            "program": "${workspaceFolder}/python/FileUtil/BitWrite.py",
             "console": "integratedTerminal"
         },
         {
@@ -30,6 +30,23 @@
                     "value": "${workspaceFolder}/python"
                 }
             ],
+        },
+        {
+            "name": "testRecall",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/python/testRecall.py",
+            "console": "integratedTerminal",
+            "environment": [
+                {
+                    "name": "PYTHONHOME",
+                    "value": "${workspaceFolder}/python"
+                }
+            ],
+            "args": [
+                "/Users/shenhangke/project/C++/QI/nsg/data/wiki-Vote.txt_grd_searchResult",
+                "/Users/shenhangke/project/C++/QI/nsg/data/wiki-Vote.txt_searchResult"
+            ]
         },
         {
             "name": "testCCall",

@@ -53,7 +53,21 @@ if __name__ == "__main__":
         exit(0)
     # 第四个参数使用逗号进行分隔，主要输入需要查询的查询节点编号，以index结果为标准
     if sys.argv[3]!="null":
-        queryIndexs=sys.argv[3].split(",")
+        queryIndexsInt=None
+        if sys.argv[3].find(",")!=-1:
+            queryIndexs=sys.argv[3].split(",")
+            queryIndexsInt=[int(queryIndexs[i]) for i in range(len(queryIndexs))]
+        elif sys.argv[3].find("-")!=-1:
+            ranges=sys.argv[3].split("-")
+            if(len(ranges)==2):
+                queryIndexsInt=range(int(ranges[0]),int(ranges[1]))
+            else:
+                print("the argument is error")
+                exit(-1)
+        else:
+            print("the argument is error")
+            exit(-1)
+            
         queryIndexsInt=[int(queryIndexs[i]) for i in range(len(queryIndexs))]
         # 生成查询数据集
         # outSplit("query data")
