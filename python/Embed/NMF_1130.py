@@ -6,7 +6,7 @@ from sklearn.decomposition import NMF
 import struct
 import typing
 import os
-import embed.__init__
+import Embed.__init__
 from FileUtil.IndexOriginFile import IndexOriginNode
 from FileUtil.BitWrite import WriteVector
 from FileUtil.BitWrite import generateQueryVec
