@@ -101,13 +101,37 @@
             "name": "run_gidsne",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/tests/test_gidsne_index",
+            "program": "${workspaceFolder}/build/tests/test_gidsne_index_exe",
             "args": [
-                "/root/project/data/siftsmall/siftsmall_base.fvecs",
-                "/root/project/data/siftsmall/nndescent/knn.graph",
-                "40",
+                "/root/project/nsg/data/wiki-Vote.txt_grd",
+                
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/tests",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "make_project"
+        },
+        {
+            "name": "run_search",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/tests/test_nsg_search",
+            "args": [
+                "/root/project/nsg/data/wiki-Vote.txt_grd_embed",
+                "/root/project/nsg/data/wiki-Vote.txt_grd_query",
+                "/root/project/nsg/data/wiki-Vote.txt_grd_embed_fanng",
                 "50",
-                "500",
+                "40",
+                "/root/project/nsg/data/wiki-Vote.txt_grd_searchResult"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/tests",

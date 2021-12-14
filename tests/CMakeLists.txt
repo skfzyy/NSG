@@ -22,6 +22,7 @@ endif()
 
 # message(STATUS ${CMAKE_BINARY_DIR}/src)
 add_library(test_gidsne_index SHARED test_gidsne_index.cpp)
+add_executable(test_gidsne_index_exe test_gidsne_index.cpp)
 # target_link_directories(test_gidsne_index PUBLIC ${CMAKE_BINARY_DIR}/src)
 target_link_libraries(test_gidsne_index PRIVATE ${CMAKE_BINARY_DIR}/src/lib${PROJECT_NAME}.a)
-
+target_link_libraries(test_gidsne_index_exe PRIVATE ${CMAKE_BINARY_DIR}/src/lib${PROJECT_NAME}.a)

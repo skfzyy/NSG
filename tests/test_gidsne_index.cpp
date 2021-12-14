@@ -77,40 +77,7 @@ extern "C" void BuildGidsneIndex(
 
 int main(int argc, char* argv[])
 {
-    if (argc != 9)
-    {
-        std::cout << argv[0]
-                  << " data_file nn_graph_path L R C save_graph_file"
-                  << std::endl;
-        exit(-1);
-    }
-    float* data_load = NULL;
-    unsigned points_num, dim;
-    load_data(argv[1], data_load, points_num, dim);
-
-    std::string nn_graph_path(argv[2]);
-    unsigned L = (unsigned)atoi(argv[3]);
-    unsigned R = (unsigned)atoi(argv[4]);
-    unsigned C = (unsigned)atoi(argv[5]);
-
-    // data_load = efanna2e::data_align(data_load, points_num,
-    // dim);//one must align the data before build
-    QI::IndexGidsne indexGidsne(dim, points_num, efanna2e::L2,
-                                nullptr, argv[7], argv[8]);
-
-    auto s = std::chrono::high_resolution_clock::now();
-    efanna2e::Parameters paras;
-    paras.Set<unsigned>("L", L);
-    paras.Set<unsigned>("R", R);
-    paras.Set<unsigned>("C", C);
-    paras.Set<std::string>("nn_graph_path", nn_graph_path);
-
-    indexGidsne.Build(points_num, data_load, paras);
-    auto e = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = e - s;
-
-    std::cout << "indexing time: " << diff.count() << "\n";
-    indexGidsne.Save(argv[6]);
-
-    return 0;
+    std::string filePath(argv[1]);
+    std::wstring wFilePath(filePath.begin(),filePath.end());
+    BuildGidsneIndex(wFilePath.c_str(),40,50,500);
 }

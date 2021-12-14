@@ -1,11 +1,15 @@
 import struct
 import typing
+KNN_SEARCH_FILE="_knn_search"
 
-
-def WriteVector(matrix: typing.List[typing.Tuple[int, float]], filePath):
+def WriteVector(matrix: typing.List[typing.Tuple[int, float]], filePath,isAppendPlaceHolder=False):
     with open(filePath, "wb") as fvecsFile:
+        if isAppendPlaceHolder:
+            # 在nsg的搜索方法中，前两个字节是_ep和width(不知道哪个王八蛋想出来的)
+            fvecsFile.write(struct.pack("<i",0))
+            fvecsFile.write(struct.pack("<i",0))
         for dimension, vector in matrix:
-            print("write function ,the dimension is: "+str(dimension))
+            # print("write function ,the dimension is: "+str(dimension))
             dimensionData = struct.pack("<i", int(dimension))
             fvecsFile.write(dimensionData)
             for ele in vector:
@@ -49,6 +53,10 @@ def loadFvecsData(filePath):
                 realData=struct.unpack(unpackStr,file.read(4*int(dimension)))
                 result.append((dimension,list(realData)))
     return result
+
+def writeKNNData(filePath):
+    data=loadFvecsData(filePath)
+    WriteVector(data,filePath+KNN_SEARCH_FILE,isAppendPlaceHolder=True)
 
 
 if __name__ == "__main__":

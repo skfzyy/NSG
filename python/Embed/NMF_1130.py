@@ -19,6 +19,10 @@ GIDSNE_SUFIX = "_gidsne"
 QUERY_SUFIX="_query"
 SEARCH_RESULT_SUFIX="_searchResult"
 
+NSG_SUFIX="_nsg"
+FANNA_SUFIX="_embed_fanng"
+KNN_SEARCH_FILE="_knn_search"
+
 
 
 def read_csv(csv_file):

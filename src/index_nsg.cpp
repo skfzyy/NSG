@@ -22,6 +22,7 @@ void IndexNSG::Save(const char *filename) {
   assert(final_graph_.size() == nd_);
 
   //第一个四字节保存有多少个邻居节点
+  //最大邻居节点数
   out.write((char *)&width, sizeof(unsigned));
   //第二个四字节保存导航节点的id
   out.write((char *)&ep_, sizeof(unsigned));
@@ -497,7 +498,7 @@ void IndexNSG::Link(const Parameters &parameters, SimpleNeighbor *cut_graph_) {
   std::vector<std::mutex> locks(nd_);
 
 //指定下面的部分使用多线程
-#pragma omp parallel
+// #pragma omp parallel
   {
     // unsigned cnt = 0;
     //猜测这里的pool是不是就是候选节点池
@@ -505,7 +506,7 @@ void IndexNSG::Link(const Parameters &parameters, SimpleNeighbor *cut_graph_) {
     //这里的flags应该是对应每一个S中的节点的检查标识位
     boost::dynamic_bitset<> flags{nd_, 0};
 //每100个做一次动态任务分配
-#pragma omp for schedule(dynamic, 100)
+// #pragma omp for schedule(dynamic, 100)
     for (unsigned n = 0; n < nd_; ++n) {
       //这里是针对每一个节点而言
       pool.clear();
@@ -544,6 +545,7 @@ void IndexNSG::Link(const Parameters &parameters, SimpleNeighbor *cut_graph_) {
 }
 
 void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters) {
+  // DebugLog("1");
   std::string nn_graph_path = parameters.Get<std::string>("nn_graph_path");
   unsigned range = parameters.Get<unsigned>("R");
   Load_nn_graph(nn_graph_path.c_str());
@@ -551,7 +553,7 @@ void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters) 
   //确定导航节点
   //赋值给_ep
   init_graph(parameters);
-
+  // DebugLog("1");
   //数组中的元素个数是*nd_*range
   //这个数组更像是一个[nd_][range]的数组(或者说就是) 
   SimpleNeighbor *cut_graph_ = new SimpleNeighbor[nd_ * (size_t)range];
@@ -564,11 +566,10 @@ void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters) 
   */
  //从导航节点出发,进行搜索,将搜索结果放在cut_graph_中
   Link(parameters, cut_graph_);
-
+  // DebugLog("1");
   //load_nn_graph的时候就resize过一次,这里为什么要再resize一次?难道nd_在link的时候有改变?
   //经过检查,没有变化过
   final_graph_.resize(nd_);
-
   //遍历所有的节点
   //对应算法2的4行
   for (size_t i = 0; i < nd_; i++) {

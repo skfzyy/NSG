@@ -12,6 +12,11 @@
 #include <boost/dynamic_bitset.hpp>
 #include <stack>
 
+#ifndef DebugLog
+#include <iostream>
+#define DebugLog(x) std::cout<<(x)<<std::endl;
+#endif
+
 
 namespace efanna2e {
 
