@@ -122,6 +122,12 @@ if __name__ == "__main__":
                 elif sys.argv[5]=="fanng":
                     generateIndexFileName = sys.argv[1]+FANNA_SUFIX
                     os.system(dirname+"/../tools/fanng "+sys.argv[1]+EMBED_SUFIX)
+                elif sys.argv[5]=="nssg":
+                    from Embed.NMF_1130 import NSSG_SUFIX
+                    generateIndexFileName = sys.argv[1]+NSSG_SUFIX
+                    os.system(dirname+"/../tools/nssg_index "+sys.argv[1]+EMBED_SUFIX)
+                    os.system(dirname+"/../tools/nssg_index "+sys.argv[1]+EMBED_SUFIX+
+                              " "+sys.argv[1]+KNN_SUFIX+" "+"100 50 60 "+generateIndexFileName)
                 else:
                     print("undefined method")
                     exit(-1)
@@ -130,9 +136,14 @@ if __name__ == "__main__":
                     exit()
                 else:
                     if os.path.exists(sys.argv[1]+QUERY_SUFIX):
-                        os.system(dirname+"/../build/tests/test_nsg_search "+sys.argv[1]+EMBED_SUFIX+" " +
-                                  sys.argv[1]+QUERY_SUFIX+" "+generateIndexFileName+" " +
-                                  "50 40 "+sys.argv[1]+SEARCH_RESULT_SUFIX)
+                        if sys.argv[5]!="nssg":
+                            os.system(dirname+"/../build/tests/test_nsg_search "+sys.argv[1]+EMBED_SUFIX+" " +
+                                    sys.argv[1]+QUERY_SUFIX+" "+generateIndexFileName+" " +
+                                    "50 40 "+sys.argv[1]+SEARCH_RESULT_SUFIX)
+                        else:
+                            os.system(dirname+"/../tools/nssg_search "+sys.argv[1]+EMBED_SUFIX+" " +
+                                    sys.argv[1]+QUERY_SUFIX+" "+generateIndexFileName+" " +
+                                    "50 40 "+sys.argv[1]+SEARCH_RESULT_SUFIX)
                         print("has success get the search result")
                     else:
                         print("the query dataset is not exists")

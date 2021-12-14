@@ -22,6 +22,7 @@ SEARCH_RESULT_SUFIX="_searchResult"
 NSG_SUFIX="_nsg"
 FANNA_SUFIX="_embed_fanng"
 KNN_SEARCH_FILE="_knn_search"
+NSSG_SUFIX="_nssg"
 
 
 
